@@ -205,10 +205,7 @@ Password: volunteer123
 # Future Improvements
 
 * Dashboard analytics
-* CSV export
 * Volunteer profile page
-* Pagination
-* Advanced filtering
 * Notification system
 * Map integration
 * Email verification
