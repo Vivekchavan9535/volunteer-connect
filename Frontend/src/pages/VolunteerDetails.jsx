@@ -38,6 +38,14 @@ const VolunteerDetails = () => {
         availability: [],
     });
 
+    const [initialData, setInitialData] = useState({
+        location: "",
+        languages: [],
+        availability: [],
+    });
+
+    const [submitting, setSubmitting] = useState(false);
+
     const [suggestions, setSuggestions] = useState([]);
 
     const [locationSelected, setLocationSelected] =
@@ -110,17 +118,14 @@ const VolunteerDetails = () => {
                 );
 
                 if (response.data) {
+                    const fetchedData = {
+                        location: response.data.location || "",
+                        languages: response.data.languages || [],
+                        availability: response.data.availability || [],
+                    };
 
-                    setFormData({
-                        location:
-                            response.data.location || "",
-
-                        languages:
-                            response.data.languages || [],
-
-                        availability:
-                            response.data.availability || [],
-                    });
+                    setFormData(fetchedData);
+                    setInitialData(fetchedData);
 
                     if (response.data.location) {
                         setLocationSelected(true);
@@ -189,6 +194,13 @@ const VolunteerDetails = () => {
         }
     }
 
+    const isUnchanged =
+        formData.location === initialData.location &&
+        formData.languages.length === initialData.languages.length &&
+        formData.languages.every((lang) => initialData.languages.includes(lang)) &&
+        formData.availability.length === initialData.availability.length &&
+        formData.availability.every((day) => initialData.availability.includes(day));
+
     async function formSubmit(e) {
 
         e.preventDefault();
@@ -227,7 +239,7 @@ const VolunteerDetails = () => {
         };
 
         try {
-
+            setSubmitting(true);
             setMessage("");
             setMessageType("");
 
@@ -245,8 +257,9 @@ const VolunteerDetails = () => {
             );
 
             setMessage("Volunteer Registered");
-
             setMessageType("success");
+
+            setInitialData({ ...formData });
 
         } catch (error) {
 
@@ -255,6 +268,8 @@ const VolunteerDetails = () => {
             setMessage("Submission Failed");
 
             setMessageType("error");
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -443,9 +458,10 @@ const VolunteerDetails = () => {
 
                         <button
                             type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 py-2 font-semibold transition-all"
+                            disabled={isUnchanged || submitting}
+                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 py-2 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:hover:bg-gray-400"
                         >
-                            Complete Registration
+                            {submitting ? "Submitting..." : "Complete Registration"}
                         </button>
 
                     </div>
