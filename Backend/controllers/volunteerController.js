@@ -134,20 +134,10 @@ export const getVolunteers = async (req, res) => {
 
 
 export const getMyVolunteer = async (req, res) => {
-    try {
-        const volunteer = await Volunteer.findOne({
-            userId: req.user.id,
-        });
 
-        res.status(200).json({
-            message: "Volunteer Fetch Successfully",
-            volunteer,
-        });
+    const volunteer = await Volunteer.findOne({
+        userId: req.user.id,
+    });
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            message: "Server Error",
-        });
-    }
+    res.json(volunteer);
 };
