@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 
-import axios from "axios";
-import { API_BASE_URL } from "../config/api";
-
 import { useNavigate } from "react-router-dom";
 
-const PersonalInfo = () => {
+const PersonalInfo = ({ volunteerData }) => {
 
   const navigate = useNavigate();
 
@@ -19,49 +16,17 @@ const PersonalInfo = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // Sync prop data into form when available
   useEffect(() => {
-
-    async function fetchVolunteer() {
-
-      try {
-
-        const token = localStorage.getItem("token");
-
-        const response = await axios.get(
-          `${API_BASE_URL}/api/volunteers/me`,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-
-        if (response.data) {
-
-          setFormData({
-            name:
-              response.data.name || "",
-
-            email:
-              response.data.email || "",
-
-            contactNumber:
-              response.data.contactNumber || "",
-
-            dob:
-              response.data.dob?.split("T")[0] || "",
-          });
-        }
-
-      } catch (error) {
-
-        console.log(error);
-      }
+    if (volunteerData) {
+      setFormData({
+        name: volunteerData.name || "",
+        email: volunteerData.email || "",
+        contactNumber: volunteerData.contactNumber || "",
+        dob: volunteerData.dob?.split("T")[0] || "",
+      });
     }
-
-    fetchVolunteer();
-
-  }, []);
+  }, [volunteerData]);
 
   function handleChange(e) {
 

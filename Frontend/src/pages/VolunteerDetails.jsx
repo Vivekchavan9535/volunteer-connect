@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../config/api";
 
 import { useNavigate } from "react-router-dom";
 
-const VolunteerDetails = () => {
+const VolunteerDetails = ({ volunteerData, setVolunteerData }) => {
 
     const navigate = useNavigate();
 
@@ -101,65 +101,42 @@ const VolunteerDetails = () => {
         setSuggestions([]);
     }
 
+    // Sync prop data into form when available
     useEffect(() => {
+        if (volunteerData) {
+            const fetchedData = {
+                location: volunteerData.location || "",
+                languages: volunteerData.languages || [],
+                availability: volunteerData.availability || [],
+            };
 
-        async function fetchVolunteer() {
+            setFormData(fetchedData);
+            setInitialData(fetchedData);
 
-            try {
+            if (volunteerData.location) {
+                setLocationSelected(true);
+            }
 
-                const token =
-                    localStorage.getItem("token");
-
-                const response = await axios.get(
-                    `${API_BASE_URL}/api/volunteers/me`,
-                    {
-                        headers: {
-                            Authorization: token,
-                        },
-                    }
-                );
-
-                if (response.data) {
-                    const fetchedData = {
-                        location: response.data.location || "",
-                        languages: response.data.languages || [],
-                        availability: response.data.availability || [],
-                    };
-
-                    setFormData(fetchedData);
-                    setInitialData(fetchedData);
-
-                    if (response.data.location) {
-                        setLocationSelected(true);
-                    }
-
-                    // Check if personal info in localStorage differs from DB
-                    const storedPersonalInfo = JSON.parse(
-                        localStorage.getItem("personalInfo") || "{}"
-                    );
-                    const dbDob = response.data.dob?.split("T")[0] || "";
-                    if (
-                        storedPersonalInfo.name !== undefined &&
-                        (
-                            storedPersonalInfo.name !== (response.data.name || "") ||
-                            storedPersonalInfo.email !== (response.data.email || "") ||
-                            storedPersonalInfo.contactNumber !== (response.data.contactNumber || "") ||
-                            storedPersonalInfo.dob !== dbDob
-                        )
-                    ) {
-                        setPersonalInfoChanged(true);
-                    }
-                }
-
-            } catch (error) {
-
-                console.log(error);
+            // Check if personal info in localStorage differs from DB
+            const storedPersonalInfo = JSON.parse(
+                localStorage.getItem("personalInfo") || "{}"
+            );
+            const dbDob = volunteerData.dob?.split("T")[0] || "";
+            if (
+                storedPersonalInfo.name !== undefined &&
+                (
+                    storedPersonalInfo.name !== (volunteerData.name || "") ||
+                    storedPersonalInfo.email !== (volunteerData.email || "") ||
+                    storedPersonalInfo.contactNumber !== (volunteerData.contactNumber || "") ||
+                    storedPersonalInfo.dob !== dbDob
+                )
+            ) {
+                setPersonalInfoChanged(true);
+            } else {
+                setPersonalInfoChanged(false);
             }
         }
-
-        fetchVolunteer();
-
-    }, []);
+    }, [volunteerData]);
 
     function handleLanguage(language) {
 
@@ -280,6 +257,17 @@ const VolunteerDetails = () => {
             setMessageType("success");
 
             setInitialData({ ...formData });
+            setPersonalInfoChanged(false);
+
+            // Update App-level cache so re-navigating won't re-fetch
+            const personalInfo = JSON.parse(
+                localStorage.getItem("personalInfo") || "{}"
+            );
+            setVolunteerData((prev) => ({
+                ...prev,
+                ...personalInfo,
+                ...formData,
+            }));
 
         } catch (error) {
 

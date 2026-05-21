@@ -31,6 +31,8 @@ function App() {
     () => localStorage.getItem("role") || ""
   );
 
+  const [volunteerData, setVolunteerData] = useState(null);
+
   const [volunteers, setVolunteers] =
     useState([]);
 
@@ -139,6 +141,35 @@ function App() {
 
   }, [debouncedLocation, page, token, role]);
 
+  // Fetch volunteer profile once when volunteer logs in
+  useEffect(() => {
+
+    async function fetchVolunteerData() {
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/api/volunteers/me`,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+        if (response.data) {
+          setVolunteerData(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    if (token && role === "volunteer") {
+      fetchVolunteerData();
+    } else {
+      setVolunteerData(null);
+    }
+
+  }, [token, role]);
+
 
 
   return (
@@ -214,7 +245,10 @@ function App() {
           element={
             token &&
             role === "volunteer" ? (
-              <PersonalInfo />
+              <PersonalInfo
+                volunteerData={volunteerData}
+                setVolunteerData={setVolunteerData}
+              />
             ) : token &&
               role === "admin" ? (
               <Navigate
@@ -235,7 +269,10 @@ function App() {
           element={
             token &&
             role === "volunteer" ? (
-              <VolunteerDetails />
+              <VolunteerDetails
+                volunteerData={volunteerData}
+                setVolunteerData={setVolunteerData}
+              />
             ) : token &&
               role === "admin" ? (
               <Navigate
