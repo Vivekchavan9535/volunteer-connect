@@ -54,6 +54,8 @@ const VolunteerDetails = () => {
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("");
 
+    const [personalInfoChanged, setPersonalInfoChanged] = useState(false);
+
     async function handleLocation(e) {
 
         const value = e.target.value;
@@ -130,6 +132,23 @@ const VolunteerDetails = () => {
                     if (response.data.location) {
                         setLocationSelected(true);
                     }
+
+                    // Check if personal info in localStorage differs from DB
+                    const storedPersonalInfo = JSON.parse(
+                        localStorage.getItem("personalInfo") || "{}"
+                    );
+                    const dbDob = response.data.dob?.split("T")[0] || "";
+                    if (
+                        storedPersonalInfo.name !== undefined &&
+                        (
+                            storedPersonalInfo.name !== (response.data.name || "") ||
+                            storedPersonalInfo.email !== (response.data.email || "") ||
+                            storedPersonalInfo.contactNumber !== (response.data.contactNumber || "") ||
+                            storedPersonalInfo.dob !== dbDob
+                        )
+                    ) {
+                        setPersonalInfoChanged(true);
+                    }
                 }
 
             } catch (error) {
@@ -195,6 +214,7 @@ const VolunteerDetails = () => {
     }
 
     const isUnchanged =
+        !personalInfoChanged &&
         formData.location === initialData.location &&
         formData.languages.length === initialData.languages.length &&
         formData.languages.every((lang) => initialData.languages.includes(lang)) &&
